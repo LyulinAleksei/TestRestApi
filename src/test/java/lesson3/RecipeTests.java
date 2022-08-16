@@ -18,41 +18,37 @@ public class RecipeTests extends AbstractTest {
 
     @Test
     void getRecipePositiveTest() {
-        given()
-                .queryParam("apiKey", getApiKey())
+        given().spec(getRequestSpecification())
                 .when()
                 .get(getBaseUrl() + "recipes/complexSearch")
                 .then()
-                .statusCode(200);
+                .spec(responseSpecification);
     }
 
     @Test
     void getRecipeNegativeTest() {
         given()
                 .when()
-                .get(getBaseUrl() + "recipes/complexSearch")
+                .get(getBaseUrl() + "recipes/complexSearch").prettyPeek()
                 .then()
                 .statusCode(401);
     }
 
     @Test
-    void getRecipeWithQueryParametersPositiveTest() {
-        given()
-                .queryParam("apiKey", getApiKey())
-                .queryParam("includeNutrition", "false")
+    void getRecipeWithQueryParametersSpec1PositiveTest() {
+        given().spec(requestSpecification1)
                 .when()
-                .get(getBaseUrl() + "recipes/715594/information")
+                .get(getBaseUrl() + "recipes/{id}/information")
                 .then()
-                .statusCode(200);
+                .spec(responseSpecification);
     }
 
     @Test
     void getRecipeWithBodyPositiveTest() {
-        JsonPath response = given()
-                .queryParam("apiKey", getApiKey())
-                .queryParam("number", "14")
+        JsonPath response = given().spec(requestSpecification)
                 .when()
-                .get(getBaseUrl() + "recipes/complexSearch")
+                .queryParam("number", "14")
+                .get(getBaseUrl() + "recipes/complexSearch").prettyPeek()
                 .body()
                 .jsonPath();
         assertThat(response.get("number"), equalTo(14));
@@ -60,22 +56,21 @@ public class RecipeTests extends AbstractTest {
 
     @Test
     void getRecipeCuisineTest() {
-        JsonPath response = given()
-                .queryParam("apiKey", getApiKey())
-                .queryParam("cuisine", "Russian")
+        JsonPath response = given().spec(requestSpecification)
                 .when()
-                .get(getBaseUrl() + "recipes/complexSearch")
+                .queryParam("cuisine", "Russian")
+                .get(getBaseUrl() + "recipes/complexSearch").prettyPeek()
                 .body()
                 .jsonPath();
         assertThat(response.get("totalResults"), equalTo(0));
+
     }
 
     @Test
     void postRecipeCuisineTest() {
-        JsonPath response = given()
-                .queryParam("apiKey", getApiKey())
+        JsonPath response = given().spec(requestSpecification)
                 .when()
-                .post(getBaseUrl() + "recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine").prettyPeek()
                 .body()
                 .jsonPath();
         assertThat(response.get("cuisine"), equalTo("Mediterranean"));
@@ -83,11 +78,11 @@ public class RecipeTests extends AbstractTest {
 
     @Test
     void postRecipeCuisineQueryTest() {
-        JsonPath response = given()
-                .queryParam("apiKey", getApiKey())
-                .queryParam("title", "Cauliflower, Brown Rice, and Vegetable Fried Rice")
+        JsonPath response = given().spec(requestSpecification)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("title", "Cauliflower, Brown Rice, and Vegetable Fried Rice")
                 .when()
-                .post(getBaseUrl() + "recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine").prettyPeek()
                 .body()
                 .jsonPath();
         assertThat(response.get("cuisine"), equalTo("Chinese"));
@@ -95,17 +90,15 @@ public class RecipeTests extends AbstractTest {
 
     @Test
     void postRecipeCuisineHeaderTest() {
-        given()
-                .queryParam("apiKey", getApiKey())
+        given().spec(requestSpecification)
                 .when()
                 .post(getBaseUrl() + "recipes/cuisine")
                 .then()
                 .assertThat()
-                .statusCode(200)
-                .statusLine("HTTP/1.1 200 OK")
+                .spec(responseSpecification)
                 .statusLine(containsString("OK"))
-                .header("Connection", "keep-alive")
-                .contentType(ContentType.JSON);
+                .header("Connection", "keep-alive");
+
     }
 
     String id;
@@ -146,10 +139,8 @@ public class RecipeTests extends AbstractTest {
     }
 
     @Test
-    void addDeleteShoppinglistTest() {
-        id = given()
-                .queryParam("hash", "21c5194a2e65969807fd36901a5353de562c10f6")
-                .queryParam("apiKey", getApiKey())
+    void PostGetDeleteShoppinglistTest() {
+        id = given().spec(ShoppinglistRequestSpecification)
                 .body("{\n"
                         + " \"date\": 1660547927,\n"
                         + " \"slot\": 1,\n"
@@ -166,17 +157,20 @@ public class RecipeTests extends AbstractTest {
                 .when()
                 .post(getBaseUrl() + "mealplanner/aleks/shopping-list/items")
                 .then()
-                .statusCode(200)
+                .spec(responseSpecification)
                 .extract()
                 .jsonPath()
                 .get("id")
                 .toString();
 
-        given()
-                .queryParam("hash", "21c5194a2e65969807fd36901a5353de562c10f6")
-                .queryParam("apiKey", getApiKey())
+        given().spec(ShoppinglistRequestSpecification)
+                .get(getBaseUrl() + "mealplanner/aleks/shopping-list")
+                .then()
+                .spec(responseSpecification);
+
+        given().spec(ShoppinglistRequestSpecification)
                 .delete("https://api.spoonacular.com/mealplanner/aleks/shopping-list/items/" + id)
                 .then()
-                .statusCode(200);
+                .spec(responseSpecification);
     }
 }
