@@ -25,7 +25,7 @@ public abstract class AbstractTest {
     protected static ResponseSpecification responseSpecification;
     protected static RequestSpecification requestSpecification;
     protected static RequestSpecification requestSpecification1;
-    protected static RequestSpecification ShoppinglistRequestSpecification;
+    protected static RequestSpecification shoppinglistRequestSpecification;
     @BeforeAll
     static void initTest() throws IOException {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
@@ -57,7 +57,7 @@ public abstract class AbstractTest {
                 .log(LogDetail.ALL)
                 .build();
 
-        ShoppinglistRequestSpecification = new RequestSpecBuilder()
+        shoppinglistRequestSpecification = new RequestSpecBuilder()
                 .addQueryParam("apiKey", apiKey)
                 .addQueryParam("hash", "21c5194a2e65969807fd36901a5353de562c10f6")
                 .setContentType(ContentType.JSON)

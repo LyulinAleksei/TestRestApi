@@ -6,6 +6,7 @@ import io.restassured.http.Headers;
 import io.restassured.http.Method;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import lesson4.AddMealResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import java.util.Map;
@@ -105,9 +106,7 @@ public class RecipeTests extends AbstractTest {
 
     @Test
     void addDeleteMealplanTest() {
-        id = given()
-                .queryParam("hash", "21c5194a2e65969807fd36901a5353de562c10f6")
-                .queryParam("apiKey", getApiKey())
+        id = given().spec(shoppinglistRequestSpecification)
                 .body("{\n"
                         + " \"date\": 1660547927,\n"
                         + " \"slot\": 2,\n"
@@ -121,26 +120,26 @@ public class RecipeTests extends AbstractTest {
                         + " ]\n"
                         + " }\n"
                         + "}")
+
                 .when()
-                .post(getBaseUrl() + "mealplanner/aleks/items")
+                .post(getBaseUrl() + "mealplanner/aleks/items").prettyPeek()
                 .then()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .get("id")
+                .body()
+                .as(AddMealResponse.class)
+                .getId()
                 .toString();
 
-        given()
-                .queryParam("hash", "21c5194a2e65969807fd36901a5353de562c10f6")
-                .queryParam("apiKey", getApiKey())
+        given().spec(shoppinglistRequestSpecification)
                 .delete("https://api.spoonacular.com/mealplanner/aleks/items/" + id)
                 .then()
-                .statusCode(200);
+                .spec(responseSpecification);
     }
 
     @Test
     void PostGetDeleteShoppinglistTest() {
-        id = given().spec(ShoppinglistRequestSpecification)
+        id = given().spec(shoppinglistRequestSpecification)
                 .body("{\n"
                         + " \"date\": 1660547927,\n"
                         + " \"slot\": 1,\n"
@@ -163,12 +162,12 @@ public class RecipeTests extends AbstractTest {
                 .get("id")
                 .toString();
 
-        given().spec(ShoppinglistRequestSpecification)
+        given().spec(shoppinglistRequestSpecification)
                 .get(getBaseUrl() + "mealplanner/aleks/shopping-list")
                 .then()
                 .spec(responseSpecification);
 
-        given().spec(ShoppinglistRequestSpecification)
+        given().spec(shoppinglistRequestSpecification)
                 .delete("https://api.spoonacular.com/mealplanner/aleks/shopping-list/items/" + id)
                 .then()
                 .spec(responseSpecification);
